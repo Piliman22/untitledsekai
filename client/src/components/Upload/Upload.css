@@ -476,13 +476,8 @@
   background: #c82333;
 }
 
-.rating-number-input {
-  display: flex;
-  align-items: center;
-}
-
-.rating-number-input input {
-  width: 50px;
+.rating-number-input input {  
+  width: 60px !important; /* しっかり幅取るね */
   text-align: center;
   padding: 5px;
   border: 1px solid #ccc;
