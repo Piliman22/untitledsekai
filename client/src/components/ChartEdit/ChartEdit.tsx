@@ -58,7 +58,7 @@ const ChartEdit = () => {
                 const response = await fetch(`/api/charts/${id}`);
 
                 if (!response.ok) {
-                    throw new Error('データの取得に失敗したわ😭');
+                    throw new Error('データの取得に失敗');
                 }
 
                 const result = await response.json();
@@ -87,7 +87,7 @@ const ChartEdit = () => {
                 setLoading(false);
             } catch (err) {
                 console.error('譜面詳細の取得エラー:', err);
-                setError(err instanceof Error ? err.message : 'エラーが発生したわ😵');
+                setError(err instanceof Error ? err.message : 'エラーが発生');
                 setLoading(false);
             }
         };
@@ -191,7 +191,7 @@ const ChartEdit = () => {
         return (
             <div className="chart-edit-error">
                 <h2>譜面がみつかりません</h2>
-                <p>{error || '譜面データがないよ'}</p>
+                <p>{error || '譜面データがありません'}</p>
                 <Link to="/charts" className="back-button">譜面一覧に戻る</Link>
             </div>
         );
