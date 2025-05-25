@@ -11,7 +11,7 @@ const Register: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   
-  // 言語設定（とりあえず日本語固定で～）
+  // 言語設定
   const lang = 'ja';
 
   const validateForm = () => {

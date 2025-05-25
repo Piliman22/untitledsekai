@@ -102,20 +102,19 @@ const BanManager = () => {
           timeoutDays: 1
         });
       } else {
-        setMessage({ type: 'error', text: data.message || 'エラーが発生したよ！' });
+        setMessage({ type: 'error', text: data.message || 'エラーが発生' });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'エラーが発生したよ！やり直してみて！' });
+      setMessage({ type: 'error', text: 'エラーが発生' });
       console.error('BANエラー:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // 管理者のみアンバン機能を表示
   const handleUnban = async () => {
     if (!formData.username) {
-      setMessage({ type: 'error', text: 'ユーザー名を入力してね！' });
+      setMessage({ type: 'error', text: 'ユーザー名を入力してください' });
       return;
     }
 
@@ -137,10 +136,10 @@ const BanManager = () => {
       if (response.ok) {
         setMessage({ type: 'success', text: data.message });
       } else {
-        setMessage({ type: 'error', text: data.message || 'エラーが発生したよ！' });
+        setMessage({ type: 'error', text: data.message || 'エラーが発生' });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'エラーが発生したよ！やり直してみて！' });
+      setMessage({ type: 'error', text: 'エラーが発生' });
       console.error('アンバンエラー:', error);
     } finally {
       setLoading(false);
