@@ -147,41 +147,83 @@
 .search-container {
     margin-bottom: 24px;
     background: #f8f8f8;
-    padding: 15px;
+    padding: 20px;
+    /* パディングを増やして内部の余白を確保 */
     border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .search-box {
     display: flex;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
+    align-items: stretch;
 }
 
 .search-input {
     flex: 1;
-    padding: 10px 15px;
-    border: 1px solid #ddd;
+    padding: 12px 15px;
+    height: 50px;
+    border: 1.5px solid #ddd;
     border-radius: 5px 0 0 5px;
-    font-size: 1rem;
+    font-size: 1.1rem;
     outline: none;
     transition: border-color 0.3s;
+    color: #333;
+    font-weight: 400;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    min-width: 200px; /* 最小幅を設定 */
+}
+
+.search-input::placeholder {
+    color: #999;
+    font-size: 1.05rem;
 }
 
 .search-input:focus {
+    border-color: #9b59b6;
+    box-shadow: inset 0 1px 3px rgba(155, 89, 182, 0.1);
+}
+
+/* カテゴリ選択部分を小さくする */
+.search-category {
+    padding: 0 10px;
+    min-width: 80px; /* 最小幅を小さくする */
+    width: auto; /* 内容に合わせた幅に */
+    height: 50px;
+    border: 1.5px solid #ddd;
+    border-left: none;
+    border-radius: 0 5px 5px 0;
+    background: #fff;
+    font-size: 0.9rem; /* フォントサイズを小さく */
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s;
+    color: #333;
+}
+
+.search-category:focus {
     border-color: #9b59b6;
 }
 
 .search-category {
     padding: 0 15px;
-    border: 1px solid #ddd;
+    min-width: 120px;
+    /* 最小幅を設定 */
+    height: 50px;
+    /* 高さを検索ボックスと合わせる */
+    border: 1.5px solid #ddd;
     border-left: none;
     border-radius: 0 5px 5px 0;
     background: #fff;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    /* フォントサイズを大きく */
     cursor: pointer;
     outline: none;
     transition: border-color 0.3s;
+    color: #333;
+    /* テキスト色をよりはっきりと */
 }
+
 
 .search-category:focus {
     border-color: #9b59b6;
@@ -225,15 +267,104 @@
     .search-box {
         flex-direction: column;
     }
-    
-    .search-input, .search-category {
+
+    .search-input,
+    .search-category {
         width: 100%;
         border-radius: 5px;
         margin-bottom: 10px;
         border-left: 1px solid #ddd;
     }
-    
+
     .rating-filter {
         flex-wrap: wrap;
+    }
+}
+
+.filter-options {
+    margin-top: 15px;
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.difficulty-select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 0.95rem;
+}
+
+.rating-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.rating-input {
+    width: 60px;
+    padding: 5px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .search-box {
+        flex-direction: row; /* 横並びを維持 */
+    }
+    
+    .search-input {
+        flex: 1;
+        height: 50px;
+        font-size: 1rem;
+        padding: 12px 15px;
+        border-radius: 5px 0 0 5px;
+        border-right: none;
+    }
+    
+    .search-category {
+        width: auto;
+        height: 50px;
+        font-size: 0.9rem;
+        border-radius: 0 5px 5px 0;
+        border-left: none;
+    }
+}
+
+
+@media (max-width: 480px) {
+    .search-box {
+        flex-direction: column;
+    }
+    
+    .search-input, 
+    .search-category {
+        width: 100%;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    
+    .search-input {
+        border-right: 1.5px solid #ddd;
+    }
+    
+    .search-category {
+        border-left: 1.5px solid #ddd;
+        height: 40px; /* さらに小さく */
     }
 }

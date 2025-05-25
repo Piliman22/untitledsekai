@@ -34,6 +34,8 @@ export const info_level = () => {
         const validSession = query.session && isValidSession(query.session);
         const profile = query.session ? getProfile(query.session) : null;
 
+        sonolus.level.searches = searches;
+
         const { publicLevels, privateLevels } = await fetchAndFormatLevels();
         const eventLevels = await getEventLevels();
         return {
