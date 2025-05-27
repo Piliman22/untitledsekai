@@ -23,7 +23,7 @@ const Upload: React.FC = () => {
     const [rating, setRating] = useState(30);
     const [difficultyTag, setDifficultyTag] = useState('Master');
 
-    const [isPublic, setIsPublic] = useState(true);
+    const [isPublic, setIsPublic] = useState(false);
     const [fileOpen, setFileOpen] = useState(false);
     const [isCollaboration, setIsCollaboration] = useState(false);
     const [collaborationHandles, setCollaborationHandles] = useState<string[]>(['']);
@@ -389,12 +389,12 @@ const Upload: React.FC = () => {
                                         id="isPublic"
                                         checked={isPublic}
                                         onChange={(e) => setIsPublic(e.target.checked)}
-                                        disabled={loading}
+                                        disabled={true}
                                     />
                                     <span className="toggle-switch"></span>
                                     <span>公開する</span>
                                 </label>
-                                <small>※オフにすると他のユーザーには表示されません</small>
+                                <small>※初期投稿は強制的に非公開になります。</small>
                             </div>
 
                             <div className="setting-toggle">

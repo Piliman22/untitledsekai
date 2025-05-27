@@ -69,6 +69,7 @@ export interface LevelData {
     }
     meta: {
         isPublic: boolean;
+        wasPublicBefore: boolean;
         derivative: {
             isDerivative: boolean;
             id?: {  // idはオプショナルにする
@@ -113,6 +114,7 @@ declare module '@sonolus/express' {
     interface LevelItemModel {
         meta: {
             isPublic: boolean;
+            wasPublicBefore: boolean;
             derivative: {
                 isDerivative: boolean;
                 id?: {

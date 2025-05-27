@@ -9,7 +9,7 @@ import { LevelModel } from "../../models/level.js";
 import { Background } from "../../models/background.js";
 import { MESSAGE } from "../../message.js";
 import { resetLevelCache } from "./load.js";
-import { isValidSession,getProfile } from "../auth/state.js";
+import { isValidSession, getProfile } from "../auth/state.js";
 import { UserModel } from "../../models/user.js";
 
 import multer from "multer";
@@ -67,7 +67,7 @@ export const uploadLevel = () => {
 
                     const fileExtension = chartFile.originalname.substring(chartFile.originalname.lastIndexOf('.'));
                     const originalchart = await saveData(uploadFiles.chart.buffer, levelitemType.CHART, fileExtension);
-                    
+
                     const coverHash = await saveData(processedCover, levelitemType.COVER);
                     const levelHash = await saveData(processedLevel, levelitemType.LEVEL);
                     const bgmHash = await saveData(processedBgm, levelitemType.BGM);
@@ -198,6 +198,7 @@ export const uploadLevel = () => {
                         },
                         meta: {
                             isPublic: req.body.isPublic === 'true' || req.body.isPublic === true,
+                            wasPublicBefore: false,
                             derivative: {
                                 isDerivative,
                                 ...(isDerivative ? {
@@ -229,6 +230,11 @@ export const uploadLevel = () => {
 
                     const newbackground = new Background(levels.useBackground.item as BackgroundItemModel);
                     await newbackground.save();
+
+                    if (levels.meta.isPublic) {
+                        const { addToNewCharts } = await import("../../api/new.js");
+                        await addToNewCharts(levels.name);
+                    }
 
                     sonolus.level.items.unshift(levels);
                     resetLevelCache();
@@ -272,25 +278,26 @@ export const editLevel = () => {
 
                     const updatedMeta = {
                         isPublic: meta.isPublic || false,
+                        wasPublicBefore: meta.wasPublicBefore || false,
                         derivative: {
                             isDerivative: meta.derivative?.isDerivative || false,
-                            ...(meta.derivative?.id && meta.derivative.id.name ? { 
-                                id: { name: meta.derivative.id.name } 
+                            ...(meta.derivative?.id && meta.derivative.id.name ? {
+                                id: { name: meta.derivative.id.name }
                             } : {})
                         },
                         fileOpen: meta.fileOpen || false,
                         ...(meta.originalUrl ? { originalUrl: meta.originalUrl } : {}),
                         collaboration: {
                             iscollaboration: meta.collaboration?.iscollaboration || false,
-                            ...(meta.collaboration?.members ? { 
-                                members: Array.isArray(meta.collaboration.members) ? 
+                            ...(meta.collaboration?.members ? {
+                                members: Array.isArray(meta.collaboration.members) ?
                                     meta.collaboration.members.map(member => ({
                                         handle: Number(member.handle)
                                     })) : []
                             } : {})
                         }
                     };
-                    
+
 
                     if (req.body.title) {
                         updateData.title = {
@@ -326,7 +333,20 @@ export const editLevel = () => {
 
 
                     if (req.body.isPublic !== undefined) {
-                        updatedMeta.isPublic = req.body.isPublic === 'true' || req.body.isPublic === true;
+                        const newIsPublic = req.body.isPublic === 'true' || req.body.isPublic === true;
+
+                        if (newIsPublic !== updatedMeta.isPublic) {
+                            if (newIsPublic && !updatedMeta.wasPublicBefore) {
+                                const { addToNewCharts } = await import("../../api/new.js");
+                                if (id) {
+                                    await addToNewCharts(id);
+                                }
+
+                                updatedMeta.wasPublicBefore = true;
+                            }
+                        }
+
+                        updatedMeta.isPublic = newIsPublic;
                     }
 
                     if (req.body.fileOpen !== undefined) {
@@ -334,7 +354,7 @@ export const editLevel = () => {
                     }
                     if (req.body.fileOpen !== undefined) {
                         updatedMeta.fileOpen = req.body.fileOpen === 'true' || req.body.fileOpen === true;
-                        
+
                         if (!updatedMeta.fileOpen) {
                             delete updatedMeta.originalUrl;
                         }
@@ -347,12 +367,12 @@ export const editLevel = () => {
                         const filetype = chartFile.originalname.endsWith('.sus') ? 'sus' : 'usc';
                         const levelData = await convertChart(chartFile.buffer, filetype);
                         const levelHash = await saveData(levelData, levelitemType.LEVEL);
-                    
+
                         updateData.data = {
                             hash: levelHash,
                             url: '/repository/level/' + levelHash
                         };
-                        
+
                         if (updatedMeta.fileOpen) {
                             const fileExtension = chartFile.originalname.substring(chartFile.originalname.lastIndexOf('.'));
                             const originalChartHash = await saveData(chartFile.buffer, levelitemType.CHART, fileExtension);

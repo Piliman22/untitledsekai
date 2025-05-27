@@ -221,6 +221,7 @@ const levelSchema = new mongoose.Schema({
   },
   meta: {
     isPublic: Boolean,
+    wasPublicBefore: Boolean,
     derivative: {
       isDerivative: Boolean,
       id: {
