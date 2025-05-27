@@ -3,6 +3,68 @@ import { LevelModel } from "../models/level.js";
 import { MESSAGE } from "../message.js";
 import { NewChartModel } from "../models/newlevel.js";
 import { RequestHandler } from "express";
+import { apiKeyAuth } from "./middleware/auth.js";
+import { notifyWebhooks } from "./webhook.js";
+
+export const getExternalNewCharts = async () => {
+  sonolus.router.get("/api/external/charts/new", 
+    apiKeyAuth,
+    async (req, res) => {
+      try {
+        const { limit = 20, page = 1, since = '' } = req.query;
+        const skip = (Number(page) - 1) * Number(limit);
+        
+        const query = since 
+          ? { publishedAt: { $gt: new Date(String(since)) } } 
+          : {};
+
+        const newCharts = await NewChartModel.find(query)
+          .sort({ publishedAt: -1 })
+          .skip(skip)
+          .limit(Number(limit))
+          .lean()
+          .exec();
+
+        const totalCount = await NewChartModel.countDocuments(query);
+
+        const chartsData = newCharts.map(chart => {
+          return {
+            id: chart._id,
+            name: chart.name,
+            title: {
+              ja: chart.title?.ja || null,
+              en: chart.title?.en || null
+            },
+            artist: {
+              ja: chart.artist?.ja || null,
+              en: chart.artist?.en || null
+            },
+            author: {
+              ja: chart.author?.ja || null,
+              en: chart.author?.en || null
+            },
+            rating: chart.rating || 0,
+            publishedAt: chart.publishedAt,
+            coverUrl: chart.coverUrl || "",
+            playUrl: `https://us.pim4n-net.com/charts/${chart.name}`
+          };
+        });
+
+        res.json({
+          success: true,
+          data: chartsData,
+          totalCount,
+          currentPage: Number(page),
+          totalPages: Math.ceil(totalCount / Number(limit)),
+          timestamp: new Date()
+        });
+      } catch (e) {
+        console.error("Error fetching new charts for external API:", e);
+        res.status(500).json({ error: MESSAGE.ERROR.SERVERERROR });
+      }
+    }
+  );
+};
 
 export const addToNewCharts = async (levelName: string) => {
     try {
@@ -21,9 +83,20 @@ export const addToNewCharts = async (levelName: string) => {
             author: level.author,
             rating: level.rating,
             coverUrl: level.cover?.url
-        })
+        });
 
         await newChart.save();
+        
+        await notifyWebhooks('new_chart', {
+            name: levelName,
+            title: level.title,
+            artist: level.artists,
+            author: level.author,
+            rating: level.rating || 0,
+            publishedAt: new Date(),
+            coverUrl: level.cover?.url || ""
+        });
+        
         return true;
     } catch (e) {
         console.error("Error adding to new charts:", e);

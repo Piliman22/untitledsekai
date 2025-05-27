@@ -19,10 +19,9 @@ const app = express();
 app.use(morgan("dev"));
 
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? process.env.FRONTEND_URL || true // 本番環境では特定のオリジンを許可するか、環境変数で設定
-        : true, // 開発環境ではすべてのオリジンを許可
-    credentials: true // クッキーとかの認証情報も許可
+    origin: ['*'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
