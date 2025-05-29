@@ -102,3 +102,32 @@ export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction) => 
 
     next();
 };
+
+export const verifyToken = async (token: string) => {
+  try {
+    const decoded = jwt.verify(token, process.env.SECRET_KEY as string) as {
+      id: string;
+      username: string;
+      user_number: number;
+    };
+    
+    const user = await UserModel.findById(decoded.id);
+    if (!user) {
+      throw new Error('ユーザーが見つかりません');
+    }
+    
+    if (user.isBanned) {
+      throw new Error('アカウントがBANされています');
+    }
+    
+    const now = new Date();
+    if (user.timeoutUntil && new Date(user.timeoutUntil) > now) {
+      throw new Error('アカウントがタイムアウト中です');
+    }
+    
+    return user;
+  } catch (error) {
+    console.error('トークン検証エラー:', error);
+    throw error;
+  }
+};

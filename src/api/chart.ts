@@ -3,12 +3,12 @@ import { LevelModel } from "../models/level.js";
 import { MESSAGE } from "../message.js";
 import { RequestHandler } from "express";
 import { UserModel } from "../models/user.js";
-import { isValidSession, getProfile } from "../sonolus/auth/state.js";
+import { verifyToken } from "./middleware/isAuth.js"
 
 export const getCharts = async () => {
     sonolus.router.get('/api/charts', async (req, res) => {
         try {
-            const charts = await LevelModel.find()
+            const charts = await LevelModel.find({ 'meta.isPublic': true })
                 .sort({ createdAt: -1 })
                 .lean()
                 .exec();
@@ -188,12 +188,32 @@ export const getUserCharts = async () => {
     sonolus.router.get('/api/charts/user/:username', async (req, res) => {
         try {
             const { username } = req.params;
+            let isOwner = false;
+
+            const token = req.headers.authorization?.split(' ')[1];
+            if (token) {
+                try {
+                    const authUser = await verifyToken(token);
+                    if (authUser && authUser.username === username) {
+                        isOwner = true;
+                    }
+                } catch (err) {
+                    console.warn('Invalid token:', err);
+                }
+            }
+
+            const publicFilter = isOwner ? {} : { 'meta.isPublic': true };
 
             // usernameからauthorフィールドで検索
             const charts = await LevelModel.find({
-                $or: [
-                    { 'author.ja': { $regex: username, $options: 'i' } },
-                    { 'author.en': { $regex: username, $options: 'i' } }
+                $and: [
+                    {
+                        $or: [
+                            { 'author.ja': { $regex: username, $options: 'i' } },
+                            { 'author.en': { $regex: username, $options: 'i' } }
+                        ]
+                    },
+                    publicFilter
                 ]
             })
                 .sort({ createdAt: -1 })
@@ -202,8 +222,12 @@ export const getUserCharts = async () => {
 
             // 合作譜面も含める（メンバーに入ってる譜面）
             const collabCharts = await LevelModel.find({
-                'meta.collaboration.iscollaboration': true,
-                'meta.collaboration.members.handle': { $exists: true }
+                $and: [
+                    {
+                        'meta.collaboration.iscollaboration': true,
+                        'meta.collaboration.members.handle': { $exists: true }
+                    },
+                ]
             })
                 .lean()
                 .exec();
@@ -266,26 +290,26 @@ export const getlikedCharts = async () => {
     sonolus.router.get('/api/charts/liked/user/:username', (async (req, res) => {
         try {
             const { username } = req.params;
-            
+
             const user = await UserModel.findOne({ username }).lean().exec();
-            
+
             if (!user) {
                 return res.status(404).json({
                     message: MESSAGE.ERROR.NOTFOUND
                 });
             }
-            
+
             if (!user.likedCharts || user.likedCharts.length === 0) {
                 return res.json({
                     success: true,
                     data: []
                 });
             }
-            
+
             const charts = await LevelModel.find({
                 name: { $in: user.likedCharts }
             }).lean().exec();
-            
+
             const charts_data = charts.map(level => {
                 return {
                     name: level.name,
@@ -309,7 +333,7 @@ export const getlikedCharts = async () => {
                     }
                 };
             });
-            
+
             res.json({
                 success: true,
                 data: charts_data
@@ -320,7 +344,7 @@ export const getlikedCharts = async () => {
                 message: MESSAGE.ERROR.SERVERERROR
             });
         }
-    })as RequestHandler);
+    }) as RequestHandler);
 }
 
 export const charts = () => {

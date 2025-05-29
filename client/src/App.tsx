@@ -17,6 +17,7 @@ import BanManager from './components/Admin/BanManager';
 import BanChecker from './components/Auth/BanChecker';
 import BannedPage from './components/Auth/BannedPage';
 import './App.css';
+import { HelmetProvider } from 'react-helmet-async';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -123,6 +124,7 @@ const Header = () => {
 
 function App() {
   return (
+    <HelmetProvider>
     <LanguageProvider>
       <BrowserRouter>
         <div className="app">
@@ -155,6 +157,7 @@ function App() {
         </div>
       </BrowserRouter>
     </LanguageProvider>
+    </HelmetProvider>
   )
 }
 

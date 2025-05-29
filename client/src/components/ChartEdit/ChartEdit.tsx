@@ -64,7 +64,7 @@ const ChartEdit = () => {
                 const result = await response.json();
 
                 if (!result.success) {
-                    throw new Error(result.message || '譜面データの取得に失敗した〜');
+                    throw new Error(result.message || '譜面データの取得に失敗');
                 }
 
                 const chartData = result.data;
@@ -167,12 +167,12 @@ const ChartEdit = () => {
             }
 
             const result = await response.json();
-            alert('譜面の更新が完了したよ〜！🎉');
+            alert('譜面の更新が完了');
             navigate(`/charts/${result.name}`);
 
         } catch (error) {
             console.error('譜面更新エラー:', error);
-            alert('更新に失敗しちゃった... もう一回試してみて！');
+            alert('更新に失敗');
         } finally {
             setSaving(false);
         }

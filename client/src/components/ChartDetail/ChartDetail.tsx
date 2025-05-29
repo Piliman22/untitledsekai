@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import './ChartDetail.css';
 import { ChartDetail as ChartDetailType } from '../../../../src/models/level'
 import CollaborationMember from './CollaborationMember';
@@ -17,18 +18,18 @@ const ChartDetail: React.FC = () => {
         const fetchCurrentUser = async () => {
             try {
                 const token = localStorage.getItem('token');
-                
+
                 if (!token) {
                     console.log('ログインされていません。');
                     return;
                 }
-                
+
                 const response = await fetch('/api/me', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
-                
+
                 if (response.ok) {
                     const userData = await response.json();
                     setCurrentUser(userData);
@@ -42,7 +43,7 @@ const ChartDetail: React.FC = () => {
                 console.error('ユーザー情報の取得に失敗:', err);
             }
         };
-    
+
         fetchCurrentUser();
     }, []);
 
@@ -62,7 +63,7 @@ const ChartDetail: React.FC = () => {
                 if (!result.success) {
                     throw new Error(result.message || '譜面データの取得に失敗しました。');
                 }
-                
+
                 setChart(result.data);
                 setLoading(false);
             } catch (err) {
@@ -87,13 +88,13 @@ const ChartDetail: React.FC = () => {
             // 管理者チェック
             const isAdmin = currentUser.role === 'admin';
             const isModerator = currentUser.role === 'moderator';
-            
+
             // 作者チェック（#以降の数字がhandleと一致するか）
             const authorHandle = (chart.author.ja || chart.author.en).split('#')[1] || "";
-            const isAuthor = authorHandle !== "" && 
-                (currentUser.sonolusProfile?.handle === parseInt(authorHandle) || 
-                 currentUser.sonolusProfile?.handle === authorHandle);
-            
+            const isAuthor = authorHandle !== "" &&
+                (currentUser.sonolusProfile?.handle === parseInt(authorHandle) ||
+                    currentUser.sonolusProfile?.handle === authorHandle);
+
             setHasEditPermission(isAdmin || isAuthor || isModerator);
         }
     }, [chart, currentUser]);
@@ -112,8 +113,50 @@ const ChartDetail: React.FC = () => {
         );
     }
 
+    const title = chart.title.ja || chart.title.en;
+    const artist = chart.artist.ja || chart.artist.en;
+    const author = chart.author.ja || chart.author.en;
+    const description = chart.description.ja || chart.description.en || `説明なし`;
+    const coverUrl = chart.coverUrl.startsWith('https') ? chart.coverUrl : `${window.location.origin}${chart.coverUrl}`;
+
     return (
         <div className="chart-detail-container">
+
+            <Helmet>
+                <title>{`${title} (${artist}) - 難易度${chart.rating} | Reuntitled Sekai`}</title>
+                <meta name="description" content={description} />
+                
+                <meta property="og:title" content={`${title} - 難易度${chart.rating}`} />
+                <meta property="og:description" content={description} />
+                <meta property="og:image" content={coverUrl} />
+                <meta property="og:type" content="music.song" />
+                <meta property="og:url" content={window.location.href} />
+                
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={`${title} (${artist}) - 難易度${chart.rating}`} />
+                <meta name="twitter:description" content={description} />
+                <meta name="twitter:image" content={coverUrl} />
+                
+                <script type="application/ld+json">
+                {JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "MusicComposition",
+                    "name": title,
+                    "composer": {
+                        "@type": "Person",
+                        "name": artist
+                    },
+                    "genre": "Game Music",
+                    "producer": {
+                        "@type": "Person",
+                        "name": author
+                    },
+                    "image": coverUrl,
+                    "difficulty": chart.rating
+                })}
+                </script>
+            </Helmet>
+            
             <Link to="/charts" className="back-link">← 譜面一覧に戻る</Link>
 
             <div className="chart-detail-header">
@@ -181,7 +224,7 @@ const ChartDetail: React.FC = () => {
                         >
                             Sonolusで開く
                         </button>
-                        
+
                         {/* 権限がある場合のみ編集・削除ボタンを表示 */}
                         {hasEditPermission && (
                             <>

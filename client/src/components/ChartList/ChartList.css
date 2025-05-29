@@ -368,3 +368,49 @@
         height: 40px; /* さらに小さく */
     }
 }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.pagination-button {
+  padding: 8px 16px;
+  margin: 0 4px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.pagination-button:hover {
+  background-color: #e0e0e0;
+}
+
+.pagination-button.active {
+  background-color: #4a90e2;
+  color: white;
+  border-color: #4a90e2;
+}
+
+.pagination-ellipsis {
+  margin: 0 8px;
+}
+
+.pagination-button.prev,
+.pagination-button.next {
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .pagination-button {
+    padding: 6px 12px;
+    margin: 0 2px;
+    font-size: 13px;
+  }
+}

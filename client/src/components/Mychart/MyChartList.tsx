@@ -28,11 +28,11 @@ interface MyChartListProps {
   limit?: number;
 }
 
-const MyChartList: React.FC<MyChartListProps> = ({ 
-  username, 
-  isCurrentUser = false, 
-  type = 'uploaded', 
-  limit 
+const MyChartList: React.FC<MyChartListProps> = ({
+  username,
+  isCurrentUser = false,
+  type = 'uploaded',
+  limit
 }) => {
   const [charts, setCharts] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -42,15 +42,26 @@ const MyChartList: React.FC<MyChartListProps> = ({
     const fetchCharts = async () => {
       setLoading(true);
       try {
-        const endpoint = type === 'liked' 
+        const endpoint = type === 'liked'
           ? `/api/charts/liked/user/${username}`
           : `/api/charts/user/${username}`;
-        
-        const response = await fetch(endpoint);
+
+        const requestOptions: RequestInit = {};
+
+        if (isCurrentUser) {
+          const token = localStorage.getItem('token');
+          if (token) {
+            requestOptions.headers = {
+              'Authorization': `Bearer ${token}`
+            };
+          }
+        }
+
+        const response = await fetch(endpoint, requestOptions);
         if (!response.ok) {
           throw new Error('譜面の取得に失敗');
         }
-        
+
         const data = await response.json();
         if (data.success) {
           setCharts(data.data);
@@ -67,7 +78,7 @@ const MyChartList: React.FC<MyChartListProps> = ({
     if (username) {
       fetchCharts();
     }
-  }, [username, type]);  // typeも依存配列に入れたよ！
+  }, [username, type, isCurrentUser]);
 
   if (loading) {
     return <div className="charts-loading">譜面読み込み中...</div>;
@@ -77,15 +88,13 @@ const MyChartList: React.FC<MyChartListProps> = ({
     return <div className="charts-error">{error}</div>;
   }
 
-  // 公開譜面のみフィルタリング（必要な場合）
   const displayCharts = isCurrentUser ? charts : charts.filter(chart => chart.meta.isPublic);
-  
-  // limitが指定されてたら表示数制限するよ！
+
   const limitedCharts = limit ? displayCharts.slice(0, limit) : displayCharts;
 
   if (limitedCharts.length === 0) {
     return <div className="charts-empty">
-      {type === 'liked' ? 'いいねした譜面がないよ！' : '譜面がないよ！'}
+      {type === 'liked' ? 'いいねした譜面がありません。' : '譜面がありません。'}
     </div>;
   }
 
@@ -106,8 +115,8 @@ const MyChartList: React.FC<MyChartListProps> = ({
             <div className="chart-meta">
               <span className="chart-rating">難易度{chart.rating}</span>
               {chart.isCollab && <span className="chart-collab-badge">合作</span>}
-              {chart.meta.isPublic ? 
-                <span className="chart-status-public">公開中</span> : 
+              {chart.meta.isPublic ?
+                <span className="chart-status-public">公開中</span> :
                 <span className="chart-status-private">非公開</span>
               }
             </div>
