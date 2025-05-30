@@ -52,8 +52,9 @@ export const info_level = () => {
                         const isAuthor = authorId === profileId;
 
                         const isCollaborator = level.meta?.collaboration?.members?.some(member => String(member.handle) === String(profileId));
+                        const isPrivateShare = level.meta?.privateShare?.users?.some(user => String(user.handle) === String(profileId));
 
-                        return isAuthor || isCollaborator;
+                        return isAuthor || isCollaborator || isPrivateShare;
                     }),
                 }] : []),
                 ...(eventLevels.length > 0 ? [{
