@@ -53,6 +53,12 @@ export type LevelMetadata = {
       handle: number;
     }[];
   };
+  privateShare: {
+    isPrivateShare: boolean;
+    users?: {
+      handle: number;
+    }[];
+  };
 };
 
 // メインのレベル型定義
@@ -233,6 +239,12 @@ const levelSchema = new mongoose.Schema({
     collaboration: {
       iscollaboration: Boolean,
       members: [{
+        handle: Number,
+      }]
+    },
+    privateShare: {
+      isPrivateShare: Boolean,
+      users: [{
         handle: Number,
       }]
     }

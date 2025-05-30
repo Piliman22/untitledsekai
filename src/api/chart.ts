@@ -204,7 +204,6 @@ export const getUserCharts = async () => {
 
             const publicFilter = isOwner ? {} : { 'meta.isPublic': true };
 
-            // usernameからauthorフィールドで検索
             const charts = await LevelModel.find({
                 $and: [
                     {
@@ -220,7 +219,6 @@ export const getUserCharts = async () => {
                 .lean()
                 .exec();
 
-            // 合作譜面も含める（メンバーに入ってる譜面）
             const collabCharts = await LevelModel.find({
                 $and: [
                     {
@@ -232,26 +230,47 @@ export const getUserCharts = async () => {
                 .lean()
                 .exec();
 
-            // ソノラスプロフィールを持ってるユーザーなら、ハンドル番号でも検索
             const userWithHandle = await UserModel.findOne({ username }).select('sonolusProfile');
             const userHandle = userWithHandle?.sonolusProfile?.handle;
 
-            // コラボ譜面をフィルタリング
             const userCollabCharts = userHandle ? collabCharts.filter(chart =>
                 chart.meta?.collaboration?.members?.some(member =>
                     String(member.handle) === String(userHandle)
                 )
             ) : [];
+            
+            const privateSharedCharts = userHandle ? await LevelModel.find({
+                $and: [
+                    {
+                        'meta.privateShare.isPrivateShare': true,
+                        'meta.privateShare.users.handle': userHandle
+                    },
+                    publicFilter
+                ]
+            })
+                .lean()
+                .exec() : [];
+                
+            const userPrivateSharedCharts = userHandle ? privateSharedCharts.filter(chart =>
+                chart.meta?.privateShare?.users?.some(user =>
+                    String(user.handle) === String(userHandle)
+                )
+            ) : [];
 
-            // 通常譜面とコラボ譜面をマージ（重複除去）
             const allCharts = [...charts];
+            
             userCollabCharts.forEach(collabChart => {
                 if (!allCharts.some(c => c.name === collabChart.name)) {
                     allCharts.push(collabChart);
                 }
             });
+            
+            userPrivateSharedCharts.forEach(privateChart => {
+                if (!allCharts.some(c => c.name === privateChart.name)) {
+                    allCharts.push(privateChart);
+                }
+            });
 
-            // フロントエンド用にデータ整形
             const charts_data = allCharts.map(level => {
                 return {
                     name: level.name,
@@ -267,9 +286,13 @@ export const getUserCharts = async () => {
                         isPublic: level.meta?.isPublic || false,
                         collaboration: {
                             iscollaboration: level.meta?.collaboration?.iscollaboration || false
+                        },
+                        privateShare: {
+                            isPrivateShare: level.meta?.privateShare?.isPrivateShare || false
                         }
                     },
-                    isCollab: Boolean(userCollabCharts.find(c => c.name === level.name))
+                    isCollab: Boolean(userCollabCharts.find(c => c.name === level.name)),
+                    isPrivateShared: Boolean(userPrivateSharedCharts.find(c => c.name === level.name))
                 };
             });
 

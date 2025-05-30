@@ -11,8 +11,8 @@ const Home: React.FC = () => {
                 </p>
 
                 <div className="cta-buttons">
-                    <a href="#" className="cta-button primary">譜面一覧</a>
-                    <a href="#" className="cta-button secondary">譜面をアップロード</a>
+                    <a href="/charts" className="cta-button primary">譜面一覧</a>
+                    <a href="/upload" className="cta-button secondary">譜面をアップロード</a>
                 </div>
             </section>
         </div>

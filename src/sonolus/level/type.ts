@@ -83,6 +83,12 @@ export interface LevelData {
             members?: Array<{  // これもオプショナルで配列型
                 handle: number;
             }>;
+        },
+        privateShare: {
+            isPrivateShare: boolean;
+            users?: Array<{
+                handle: number;
+            }>
         }
     }
 }
@@ -128,6 +134,12 @@ declare module '@sonolus/express' {
                 members?: Array<{
                     handle: number;
                 }>;
+            },
+            privateShare: {
+                isPrivateShare: boolean;
+                users?: Array<{
+                    handle: number;
+                }>
             }
         }
     }

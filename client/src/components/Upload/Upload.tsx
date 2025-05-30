@@ -27,6 +27,8 @@ const Upload: React.FC = () => {
     const [fileOpen, setFileOpen] = useState(false);
     const [isCollaboration, setIsCollaboration] = useState(false);
     const [collaborationHandles, setCollaborationHandles] = useState<string[]>(['']);
+    const [isPrivateShare, setIsPrivateShare] = useState(false);
+    const [privateShareHandles, setPrivateShareHandles] = useState<string[]>(['']);
 
     // ファイルのstate
     const [chartFile, setChartFile] = useState<File | null>(null);
@@ -171,6 +173,18 @@ const Upload: React.FC = () => {
 
                 if (validHandles.length > 0) {
                     formData.append('collaborationHandles', JSON.stringify(validHandles));
+                }
+            }
+
+            formData.append('privateShare', isPrivateShare.toString());
+            if (isPrivateShare) {
+                // 数値に変換できるハンドル番号だけをフィルタリングして送信
+                const validHandles = privateShareHandles
+                    .filter(handle => handle.trim() !== '' && !isNaN(Number(handle.trim())))
+                    .map(handle => handle.trim());
+
+                if (validHandles.length > 0) {
+                    formData.append('privateShareHandles', JSON.stringify(validHandles));
                 }
             }
 
@@ -471,6 +485,67 @@ const Upload: React.FC = () => {
                                         disabled={loading}
                                     >
                                         メンバーを追加
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="setting-toggle">
+                                <label htmlFor='isPrivateShare' className='toggle-label'>
+                                    <input
+                                        type="checkbox"
+                                        id="isPrivateShare"
+                                        checked={isPrivateShare}
+                                        onChange={(e) => setIsPrivateShare(e.target.checked)}
+                                        disabled={loading}
+                                    />
+                                    <span className="toggle-switch"></span>
+                                    <span>非公開共有</span>
+                                </label>
+                                <small>※選択したユーザーのみ譜面を閲覧できます（公開状態に関わらず）</small>
+                            </div>
+
+                            {isPrivateShare && (
+                                <div className="private-share-settings">
+                                    <h4>共有するユーザーのハンドル番号</h4>
+                                    <small>※Sonolusのハンドル番号を入力してください</small>
+
+                                    {privateShareHandles.map((handle, index) => (
+                                        <div key={index} className="private-share-handle-input">
+                                            <input
+                                                type="text"
+                                                value={handle}
+                                                onChange={(e) => {
+                                                    const newHandles = [...privateShareHandles];
+                                                    newHandles[index] = e.target.value;
+                                                    setPrivateShareHandles(newHandles);
+                                                }}
+                                                placeholder="Sonolusハンドル番号"
+                                                disabled={loading}
+                                            />
+
+                                            {privateShareHandles.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    className="remove-handle"
+                                                    onClick={() => {
+                                                        const newHandles = privateShareHandles.filter((_, i) => i !== index);
+                                                        setPrivateShareHandles(newHandles);
+                                                    }}
+                                                    disabled={loading}
+                                                >
+                                                    削除
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+
+                                    <button
+                                        type="button"
+                                        className="add-handle"
+                                        onClick={() => setPrivateShareHandles([...privateShareHandles, ''])}
+                                        disabled={loading}
+                                    >
+                                        ユーザーを追加
                                     </button>
                                 </div>
                             )}

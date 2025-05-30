@@ -87,6 +87,7 @@ export const uploadLevel = () => {
                     const isDerivative = req.body.derivative === 'true' || req.body.derivative === true;
                     const isFileOpen = req.body.fileOpen === 'true' || req.body.fileOpen === true;
                     const isCollaboration = req.body.collaboration === 'true' || req.body.collaboration === true;
+                    const isPrivateShare = req.body.privateShare === 'true' || req.body.privateShare === true;
 
                     const levels: LevelData = {
                         name: 'utsk-' + crypto.randomBytes(8).toString('hex'),
@@ -218,6 +219,14 @@ export const uploadLevel = () => {
                                         handle: Number(handle)
                                     }))
                                 } : {})
+                            },
+                            privateShare: {
+                                isPrivateShare: isPrivateShare,
+                                ...(isPrivateShare && req.body.privateShareHandles ? {
+                                    users: JSON.parse(req.body.privateShareHandles).map((handle: string) => ({
+                                        handle: Number(handle)
+                                    }))
+                                } : {})
                             }
                         }
                     }
@@ -293,6 +302,15 @@ export const editLevel = () => {
                                 members: Array.isArray(meta.collaboration.members) ?
                                     meta.collaboration.members.map(member => ({
                                         handle: Number(member.handle)
+                                    })) : []
+                            } : {})
+                        },
+                        privateShare: {
+                            isPrivateShare: meta.privateShare?.isPrivateShare || false,
+                            ...(meta.privateShare?.users ? {
+                                users: Array.isArray(meta.privateShare.users) ?
+                                    meta.privateShare.users.map(user => ({
+                                        handle: Number(user.handle)
                                     })) : []
                             } : {})
                         }
