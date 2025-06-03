@@ -59,6 +59,11 @@ export type LevelMetadata = {
       handle: number;
     }[];
   };
+  anonymous: {
+    isAnonymous: boolean;
+    anonymous_handle: String;
+    original_handle: Number;
+  }
 };
 
 // メインのレベル型定義
@@ -247,6 +252,11 @@ const levelSchema = new mongoose.Schema({
       users: [{
         handle: Number,
       }]
+    },
+    anonymous: {
+      isAnonymous: Boolean,
+      anonymous_handle: String,
+      original_handle: Number
     }
   },
   createdAt: {

@@ -379,3 +379,26 @@
 .stat-item:hover {
     transform: translateY(-3px);
 }
+
+.horizontal-charts-container {
+  overflow-x: auto;
+  width: 100%;
+  padding: 10px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.horizontal-charts-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.horizontal-charts-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.horizontal-charts-container::after {
+  content: '';
+  display: block;
+  padding-right: 20px;
+}

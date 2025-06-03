@@ -26,6 +26,7 @@ interface MyChartListProps {
   isCurrentUser?: boolean;
   type?: 'uploaded' | 'liked';
   limit?: number;
+  layout?: 'vertical' | 'horizontal';
 }
 
 const MyChartList: React.FC<MyChartListProps> = ({

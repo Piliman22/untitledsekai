@@ -19,6 +19,11 @@ export const setupAuth = () => {
                 res.status(400).json(MESSAGE.ERROR.USERNAMEEXISTS);
                 return;
             }
+            
+            if (username.length < 3 || username.length > 20) {
+                res.status(400).json(MESSAGE.ERROR.USERNAMELENGTH);
+                return;
+            }
 
             const user_number = Math.floor(Math.random() * 900000) + 100000;
             const hashedPassword = await bcrypt.hash(password, 10);

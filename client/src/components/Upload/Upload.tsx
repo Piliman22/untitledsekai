@@ -45,6 +45,10 @@ const Upload: React.FC = () => {
 
     const [userData, setUserData] = useState<any>(null);
 
+    const [anonymousAcounts, setanonymousAcounts] = useState<Array<{ name: string, id: string }>>([]);
+    const [selectedId, setSelectedId] = useState<string>('');
+    const [showAccountSelector, setShowAccountSelector] = useState(false);
+
     // ログインチェックとSonolus認証チェック
     useEffect(() => {
         const checkAuth = async () => {
@@ -107,6 +111,46 @@ const Upload: React.FC = () => {
         checkAuth();
     }, [navigate]);
 
+    // 副名義の取得
+    useEffect(() => {
+        const fetchAnonymousAccounts = async () => {
+            if (!sonolusVerified) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/anonymous', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('取得した副名義:', data);
+                    setanonymousAcounts(data.anonymousaccount || []);
+                }
+            } catch (error) {
+                console.error('副名義の取得エラー:', error);
+            }
+        };
+
+        fetchAnonymousAccounts();
+    }, [sonolusVerified]);
+
+    useEffect(() => {
+        setAuthor('');
+    }, [selectedId]);
+
+    let authorWithHandle = author || localStorage.getItem('username')?.split('#')[0] || '';
+
+    if (selectedId) {
+        // 副名義が選択されている場合
+        authorWithHandle = `${authorWithHandle}${selectedId}`;
+    } else if (userData?.sonolusProfile?.handle) {
+        // メイン名義の場合
+        authorWithHandle = `${authorWithHandle}#${userData.sonolusProfile.handle}`;
+    }
+
     // カバー画像のプレビュー処理
     const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -147,13 +191,29 @@ const Upload: React.FC = () => {
             formData.append('title', title);
             formData.append('artist', artist);
 
-            let authorWithHandle = author || localStorage.getItem('username')?.split('#')[0] || '';
+            let authorWithHandle = '';
+            let originalHandle = null;
 
-            if (userData?.sonolusProfile?.handle) {
-                authorWithHandle = `${authorWithHandle}#${userData.sonolusProfile.handle}`;
+            if (selectedId) {
+                const anonymousName = anonymousAcounts.find(acc => acc.id === selectedId)?.name || '';
+                authorWithHandle = `${author || anonymousName}${selectedId}`;
+                originalHandle = userData?.sonolusProfile?.handle || null;
+                formData.append('anonymous', 'true');
+                formData.append('anonymousHandle', selectedId);
+            } else {
+                const mainName = localStorage.getItem('username')?.split('#')[0] || '';
+                authorWithHandle = `${author || mainName}`;
+
+                if (userData?.sonolusProfile?.handle) {
+                    authorWithHandle += `#${userData.sonolusProfile.handle}`;
+                }
+                formData.append('anonymous', 'false');
             }
 
             formData.append('author', authorWithHandle);
+            if (originalHandle !== null) {
+                formData.append('originalHandle', originalHandle.toString());
+            }
             formData.append('description', description);
             formData.append('rating', rating.toString());
             formData.append('difficultyTag', difficultyTag);
@@ -285,12 +345,62 @@ const Upload: React.FC = () => {
                                         id="author"
                                         value={author}
                                         onChange={(e) => setAuthor(e.target.value)}
-                                        placeholder={localStorage.getItem('username')?.split('#')[0] || ''}
+                                        placeholder={
+                                            selectedId
+                                                ? anonymousAcounts.find(acc => acc.id === selectedId)?.name || ''
+                                                : localStorage.getItem('username')?.split('#')[0] || ''
+                                        }
                                         disabled={loading}
                                     />
                                     {userData?.sonolusProfile?.handle && (
-                                        <div className="sonolus-handle">
-                                            <span className="sonolus-id">#{userData.sonolusProfile.handle}</span>
+                                        <div
+                                            className="sonolus-handle"
+                                            onClick={() => setShowAccountSelector(!showAccountSelector)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <span className="sonolus-id">
+                                                {selectedId ? selectedId : `#${userData.sonolusProfile.handle}`}
+                                                <span className="dropdown-arrow">▼</span>
+                                            </span>
+                                            {showAccountSelector && (
+                                                <>
+                                                    <div className="account-popup-backdrop" onClick={() => setShowAccountSelector(false)}></div>
+                                                    <div className="account-selector-popup">
+                                                        <div
+                                                            className="account-option"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedId('');
+                                                                setAuthor('');
+                                                                setShowAccountSelector(false);
+                                                            }}
+                                                        >
+                                                            メインアカウント <span className="account-id-badge">#{userData.sonolusProfile.handle}</span>
+                                                        </div>
+                                                        {anonymousAcounts.map((acc) => (
+                                                            <div
+                                                                key={acc.id}
+                                                                className="account-option"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setSelectedId(acc.id);
+                                                                    setAuthor('');
+                                                                    setShowAccountSelector(false);
+                                                                }}
+                                                            >
+                                                                {acc.name} <span className="account-id-badge">{acc.id}</span>
+                                                            </div>
+                                                        ))}
+                                                        <div className="account-option manage-option" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigate('/anonymous-manager');
+                                                            setShowAccountSelector(false);
+                                                        }}>
+                                                            副名義を管理する
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </div>

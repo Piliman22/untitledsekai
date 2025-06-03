@@ -214,10 +214,7 @@ export const getUserCharts = async () => {
                     },
                     publicFilter
                 ]
-            })
-                .sort({ createdAt: -1 })
-                .lean()
-                .exec();
+            }).sort({ createdAt: -1 }).lean().exec();
 
             const collabCharts = await LevelModel.find({
                 $and: [
@@ -233,12 +230,20 @@ export const getUserCharts = async () => {
             const userWithHandle = await UserModel.findOne({ username }).select('sonolusProfile');
             const userHandle = userWithHandle?.sonolusProfile?.handle;
 
+            const anonymousCharts = userHandle ? await LevelModel.find({
+                $and: [
+                    { 'meta.anonymous.isAnonymous': true },
+                    { 'meta.anonymous.original_handle': userHandle },
+                    publicFilter
+                ]
+            }).lean().exec() : [];
+
             const userCollabCharts = userHandle ? collabCharts.filter(chart =>
                 chart.meta?.collaboration?.members?.some(member =>
                     String(member.handle) === String(userHandle)
                 )
             ) : [];
-            
+
             const privateSharedCharts = userHandle ? await LevelModel.find({
                 $and: [
                     {
@@ -250,7 +255,7 @@ export const getUserCharts = async () => {
             })
                 .lean()
                 .exec() : [];
-                
+
             const userPrivateSharedCharts = userHandle ? privateSharedCharts.filter(chart =>
                 chart.meta?.privateShare?.users?.some(user =>
                     String(user.handle) === String(userHandle)
@@ -258,16 +263,22 @@ export const getUserCharts = async () => {
             ) : [];
 
             const allCharts = [...charts];
-            
+
             userCollabCharts.forEach(collabChart => {
                 if (!allCharts.some(c => c.name === collabChart.name)) {
                     allCharts.push(collabChart);
                 }
             });
-            
+
             userPrivateSharedCharts.forEach(privateChart => {
                 if (!allCharts.some(c => c.name === privateChart.name)) {
                     allCharts.push(privateChart);
+                }
+            });
+
+            anonymousCharts.forEach(anonChart => {
+                if (!allCharts.some(c => c.name === anonChart.name)) {
+                    allCharts.push(anonChart);
                 }
             });
 

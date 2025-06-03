@@ -26,7 +26,7 @@ async function getEventLevels() {
         'meta.isPublic': true
     });
 
-    return eventLevels as LevelItemModel[];
+    return eventLevels.map(level => level.toObject()) as unknown as LevelItemModel[];
 }
 
 export const info_level = () => {
@@ -53,8 +53,9 @@ export const info_level = () => {
 
                         const isCollaborator = level.meta?.collaboration?.members?.some(member => String(member.handle) === String(profileId));
                         const isPrivateShare = level.meta?.privateShare?.users?.some(user => String(user.handle) === String(profileId));
+                        const isAnonymous = String(level.meta?.anonymous?.original_handle) === String(profileId);
 
-                        return isAuthor || isCollaborator || isPrivateShare;
+                        return isAuthor || isCollaborator || isPrivateShare || isAnonymous;
                     }),
                 }] : []),
                 ...(eventLevels.length > 0 ? [{

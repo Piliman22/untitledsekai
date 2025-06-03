@@ -103,17 +103,17 @@ const Profile: React.FC = () => {
     useEffect(() => {
         const fetchFollowStatus = async () => {
             if (!username || !user) return;
-            
+
             try {
                 const token = localStorage.getItem('token');
                 if (!token) return;
-                
+
                 const response = await fetch(`/api/follow-status/${username}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     setFollowStatus(data);
@@ -122,14 +122,14 @@ const Profile: React.FC = () => {
                 console.error('フォロー状態の取得に失敗:', error);
             }
         };
-        
+
         fetchFollowStatus();
     }, [username, user]);
 
     // フォロー・アンフォロー処理の関数
     const handleFollowToggle = async () => {
         if (!username || followLoading) return;
-        
+
         setFollowLoading(true);
         try {
             const token = localStorage.getItem('token');
@@ -137,7 +137,7 @@ const Profile: React.FC = () => {
                 navigate('/login');
                 return;
             }
-            
+
             const method = followStatus.isFollowing ? 'DELETE' : 'POST';
             const response = await fetch(`/api/follow/${username}`, {
                 method,
@@ -145,7 +145,7 @@ const Profile: React.FC = () => {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 // フォロー状態を更新
@@ -205,7 +205,6 @@ const Profile: React.FC = () => {
                         </div>
                     )}
 
-                    {/* フォロワー・フォロー中 の数をここに移動！ */}
                     <div className="profile-stats">
                         <div className="follower-count stat-item">
                             <span className="count-number">{followStatus.followersCount}</span>
@@ -216,8 +215,7 @@ const Profile: React.FC = () => {
                             <span className="count-label">フォロー中</span>
                         </div>
                     </div>
-                    
-                    {/* 自分以外のユーザーの場合のみフォローボタンをここに表示！ */}
+
                     {!followStatus.isSelf && !isCurrentUser && (
                         <button
                             onClick={handleFollowToggle}
@@ -269,8 +267,14 @@ const Profile: React.FC = () => {
                 <Link to={`/users/${user.username}/charts`} className="view-all-link">
                     すべて見る →
                 </Link>
-                <div className="charts-placeholder">
-                    <MyChartList username={user.username} isCurrentUser={isCurrentUser} type='uploaded' limit={5} />
+                <div className="horizontal-charts-container">
+                    <MyChartList
+                        username={user.username}
+                        isCurrentUser={isCurrentUser}
+                        type='uploaded'
+                        limit={5}
+                        layout="horizontal"
+                    />
                 </div>
             </div>
 
@@ -279,8 +283,14 @@ const Profile: React.FC = () => {
                 <Link to={`/users/${user.username}/liked`} className="view-all-link">
                     すべて見る →
                 </Link>
-                <div className="charts-placeholder">
-                    <MyChartList username={user.username} isCurrentUser={isCurrentUser} type="liked" limit={5}/>
+                <div className="horizontal-charts-container">
+                    <MyChartList
+                        username={user.username}
+                        isCurrentUser={isCurrentUser}
+                        type="liked"
+                        limit={5}
+                        layout="horizontal"
+                    />
                 </div>
             </div>
         </div>

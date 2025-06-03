@@ -8,7 +8,6 @@ import { engineInfo } from "../../../lib/sonolus-pjsekai-engine-extended/index.j
 import { LevelModel } from "../../models/level.js";
 import { Background } from "../../models/background.js";
 import { MESSAGE } from "../../message.js";
-import { resetLevelCache } from "./load.js";
 import { isValidSession, getProfile } from "../auth/state.js";
 import { UserModel } from "../../models/user.js";
 
@@ -227,6 +226,11 @@ export const uploadLevel = () => {
                                         handle: Number(handle)
                                     }))
                                 } : {})
+                            },
+                            anonymous: {
+                                isAnonymous: req.body.anonymous === 'true' || req.body.anonymous === true,
+                                anonymous_handle: req.body.anonymousHandle || '',
+                                original_handle: Number(req.body.originalHandle) || 0
                             }
                         }
                     }
@@ -246,7 +250,6 @@ export const uploadLevel = () => {
                     }
 
                     sonolus.level.items.unshift(levels);
-                    resetLevelCache();
                     return res.status(200).json({
                         message: MESSAGE.SUCCESS.UPLOADSUCCESS,
                         name: levels.name,
@@ -313,6 +316,13 @@ export const editLevel = () => {
                                         handle: Number(user.handle)
                                     })) : []
                             } : {})
+                        },
+                        anonymous: {
+                            isAnonymous: meta.anonymous?.isAnonymous || false,
+                            anonymous_handle: typeof meta.anonymous?.anonymous_handle === 'string' 
+                                ? meta.anonymous.anonymous_handle 
+                                : '',
+                            original_handle: Number(meta.anonymous?.original_handle) || 0
                         }
                     };
 
@@ -501,7 +511,6 @@ export const editLevel = () => {
                             ...updateData
                         } as LevelItemModel;
                     }
-                    resetLevelCache();
                     res.json({ message: '譜面の更新が完了しました', name: id });
                 } catch (e) {
                     console.error(e);
@@ -532,7 +541,6 @@ export const deleteLevel = () => {
                 sonolus.level.items.splice(levelIndex, 1);
             }
 
-            resetLevelCache();
             res.json({ message: '譜面の削除が完了しました', name: id });
         } catch (e) {
             console.error('削除エラー:', e);

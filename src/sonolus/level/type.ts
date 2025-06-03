@@ -89,7 +89,13 @@ export interface LevelData {
             users?: Array<{
                 handle: number;
             }>
+        },
+        anonymous: {
+            isAnonymous: boolean;
+            anonymous_handle: String;
+            original_handle: Number;
         }
+
     }
 }
 
@@ -140,6 +146,11 @@ declare module '@sonolus/express' {
                 users?: Array<{
                     handle: number;
                 }>
+            },
+            anonymous: {
+                isAnonymous: boolean;
+                anonymous_handle: String;
+                original_handle: Number;
             }
         }
     }

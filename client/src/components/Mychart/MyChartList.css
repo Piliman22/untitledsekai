@@ -115,3 +115,24 @@
 .charts-error {
   color: #e74c3c;
 }
+
+.chart-list-horizontal {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 15px;
+  padding: 10px 0;
+  min-width: 100%;
+}
+
+.chart-item-horizontal {
+  min-width: 280px;
+  flex: 0 0 auto;
+  margin-right: 0;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .chart-item-horizontal {
+    min-width: 200px;
+  }
+}

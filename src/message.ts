@@ -31,7 +31,11 @@ export const MESSAGE = {
         INVALIDCREDENTIALS: {
             CODE: 401,
             MESSAGE: {en: "Invalid credentials", ja: "認証情報が無効です"},
-        }
+        },
+        USERNAMELENGTH: {
+            CODE: 400,
+            MESSAGE: {en: "Username must be between 3 and 20 characters", ja: "ユーザー名は3〜20文字でなければなりません"},
+        },
     },
     SUCCESS: {
         OK: {

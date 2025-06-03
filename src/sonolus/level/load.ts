@@ -1,51 +1,35 @@
 import { LevelModel } from "../../models/level.js";
 import { LevelItemModel } from "@sonolus/express";
 
-let cachedPublicLevels: LevelItemModel[] = [];
-let cachedPrivateLevels: LevelItemModel[] = [];
-let lastFetchTime = 0;
-
-const CACHE_TTL = 300000;
-
-export function resetLevelCache() {
-  lastFetchTime = 0;
-}
-
 export async function fetchAndFormatLevels() {
-  const now = Date.now();
+  const publicLevels = await LevelModel.find({ "meta.isPublic": true }).sort({ createdAt: -1 }).lean();
+  const privateLevels = await LevelModel.find({ "meta.isPublic": false }).sort({ createdAt: -1 }).lean();
   
-  if (now - lastFetchTime > CACHE_TTL) {
-    const publicLevels = await LevelModel.find({ "meta.isPublic": true }).sort({ createdAt: -1 }).lean();
-    const privateLevels = await LevelModel.find({ "meta.isPublic": false }).sort({ createdAt: -1 }).lean();
-    
-    cachedPublicLevels = publicLevels.map(doc => {
-      const { _id, __v, createdAt, ...levelData } = doc;
-      return {
-        ...levelData,
-        meta: {
-          ...levelData.meta,
-          isPublic: levelData.meta?.isPublic ?? true,
-        }
-      } as unknown as LevelItemModel;
-    });
-    
-    cachedPrivateLevels = privateLevels.map(doc => {
-      const { _id, __v, createdAt, ...levelData } = doc;
-      return {
-        ...levelData,
-        meta: {
-          ...levelData.meta,
-          isPublic: levelData.meta?.isPublic ?? false,
-        }
-      } as unknown as LevelItemModel;
-    });
-    
-    lastFetchTime = now;
-  }
+  const formattedPublicLevels = publicLevels.map(doc => {
+    const { _id, __v, createdAt, ...levelData } = doc;
+    return {
+      ...levelData,
+      meta: {
+        ...levelData.meta,
+        isPublic: levelData.meta?.isPublic ?? true,
+      }
+    } as unknown as LevelItemModel;
+  });
+  
+  const formattedPrivateLevels = privateLevels.map(doc => {
+    const { _id, __v, createdAt, ...levelData } = doc;
+    return {
+      ...levelData,
+      meta: {
+        ...levelData.meta,
+        isPublic: levelData.meta?.isPublic ?? false,
+      }
+    } as unknown as LevelItemModel;
+  });
   
   return {
-    publicLevels: cachedPublicLevels,
-    privateLevels: cachedPrivateLevels
+    publicLevels: formattedPublicLevels,
+    privateLevels: formattedPrivateLevels
   };
 }
 

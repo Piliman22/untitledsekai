@@ -16,8 +16,7 @@ export const sonolus = new Sonolus();
 const share = new SonolusSpaShare('./public');
 const port = process.env.PORT || 3000;
 const app = express();
-app.use(morgan("dev"));
-
+// app.use(morgan("dev"));
 app.use(cors({
     origin: ['*'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

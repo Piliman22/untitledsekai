@@ -16,6 +16,7 @@ import LikedChartsPage from './components/Mychart/LikedChartsPage';
 import BanManager from './components/Admin/BanManager';
 import BanChecker from './components/Auth/BanChecker';
 import BannedPage from './components/Auth/BannedPage';
+import AnonymousManager from './components/Anonymous/AnonymousManager';
 import './App.css';
 import { HelmetProvider } from 'react-helmet-async';
 
@@ -148,6 +149,7 @@ function App() {
               <Route path="/users/:username/liked" element={<LikedChartsPage />} />
               <Route path="/admin/ban" element={<BanManager />} />
               <Route path="/banned" element={<BannedPage />} />
+              <Route path="/anonymous-manager" element={<AnonymousManager />} />
             </Routes>
           </main>
 

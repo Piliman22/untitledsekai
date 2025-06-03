@@ -4,14 +4,15 @@ import { getUser } from "./users.js";
 import { getMaintenanceState } from "../discord/maintenance.js";
 import { newChartApis, getExternalNewCharts } from "./new.js";
 import { registerWebhookApi } from "./webhook.js";
+import { anonymous } from "./anonymous.js";
 
 export const api = () => {
     charts();
     getStorageData();
     getUser();
     getMaintenanceState();
-    // ここに他のAPIエンドポイントを追加
     newChartApis();
+    anonymous();
 
     // webhook
     registerWebhookApi();

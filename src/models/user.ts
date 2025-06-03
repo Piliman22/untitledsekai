@@ -2,6 +2,12 @@
 import mongoose from "mongoose";
 import { UserRole } from "./type.js";
 
+const anonymous_AcountSchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true},
+  id: { type: String, required: true, unique: true },
+  createdAt: { type: Date, default: Date.now },
+})
+
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -11,6 +17,8 @@ const userSchema = new mongoose.Schema({
     sonolusProfile: { type: Object },
 
     role: { type: String, enum: UserRole, default: UserRole.USER },
+
+    anonymousaccount:  [anonymous_AcountSchema],
 
     profile: {
       iconColor: { type: String, default: '#6366f1' },
